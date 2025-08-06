@@ -59,7 +59,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.metadata.collections && product.metadata.collections.length > 0 && (
             <div className="mt-2">
               <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
-                {product.metadata.collections[0].metadata.name}
+                {product.metadata.collections[0]?.metadata?.name}
               </span>
             </div>
           )}

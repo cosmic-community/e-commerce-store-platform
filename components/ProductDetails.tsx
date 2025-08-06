@@ -5,7 +5,7 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
-  const hasDiscount = product.metadata.sale_price && product.metadata.sale_price < product.metadata.price
+  const hasDiscount = product.metadata.sale_price != null && product.metadata.sale_price < product.metadata.price
   const images = product.metadata.images || []
 
   return (
@@ -60,7 +60,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   ${product.metadata.price}
                 </span>
                 <span className="px-2 py-1 text-sm bg-red-100 text-red-800 rounded">
-                  Save ${(product.metadata.price - product.metadata.sale_price!).toFixed(2)}
+                  Save ${((product.metadata.sale_price != null) ? (product.metadata.price - product.metadata.sale_price).toFixed(2) : '0.00')}
                 </span>
               </>
             ) : (
@@ -128,7 +128,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                   key={collection.id}
                   className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
                 >
-                  {collection.metadata.name}
+                  {collection.metadata?.name}
                 </span>
               ))}
             </div>
