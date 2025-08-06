@@ -12,7 +12,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Product Images */}
       <div className="space-y-4">
-        {images.length > 0 && (
+        {images.length > 0 && images[0] && (
           <>
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
               <img 
