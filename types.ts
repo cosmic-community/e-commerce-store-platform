@@ -64,6 +64,39 @@ export interface Review extends CosmicObject {
   };
 }
 
+// Cart interfaces
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  salePrice?: number | null;
+  image?: {
+    url: string;
+    imgix_url: string;
+  };
+  quantity: number;
+  sku?: string;
+  slug: string;
+}
+
+export interface Cart {
+  items: CartItem[];
+  total: number;
+  itemCount: number;
+}
+
+// Stripe interfaces
+export interface PaymentIntentRequest {
+  amount: number;
+  currency?: string;
+  items: CartItem[];
+}
+
+export interface PaymentIntentResponse {
+  clientSecret: string;
+  amount: number;
+}
+
 // API response types
 export interface CosmicResponse<T> {
   objects: T[];

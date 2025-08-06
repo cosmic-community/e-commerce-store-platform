@@ -1,4 +1,5 @@
 import { Product } from '@/types'
+import AddToCartButton from './AddToCartButton'
 
 interface ProductDetailsProps {
   product: Product
@@ -82,6 +83,11 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             <span className="text-gray-600">
               {product.metadata.stock_quantity} available
             </span>
+          </div>
+          
+          {/* Add to Cart Button */}
+          <div className="mb-8">
+            <AddToCartButton product={product} />
           </div>
         </div>
         
