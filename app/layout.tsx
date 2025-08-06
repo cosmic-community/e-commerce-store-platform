@@ -10,6 +10,9 @@ export const metadata = {
   title: 'E-Commerce Store - Quality Products & Reviews',
   description: 'Discover quality products across electronics, fashion, and home & garden categories. Read authentic customer reviews and find your perfect items.',
   keywords: 'ecommerce, products, electronics, fashion, home, garden, reviews, shopping',
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>"
+  }
 }
 
 export default function RootLayout({
