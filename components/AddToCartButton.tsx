@@ -31,8 +31,8 @@ export default function AddToCartButton({
         name: product.title,
         slug: product.slug,
         price: product.metadata.price || 0,
-        salePrice: product.metadata.sale_price,
-        image: product.metadata.image,
+        salePrice: product.metadata.sale_price || undefined,
+        image: product.metadata.images?.[0] || undefined,
         sku: product.metadata.sku
       };
 

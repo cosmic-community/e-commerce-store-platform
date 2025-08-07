@@ -69,7 +69,7 @@ export interface CartItem {
   id: string;
   name: string;
   price: number;
-  salePrice?: number | null;
+  salePrice?: number;
   image?: {
     url: string;
     imgix_url: string;

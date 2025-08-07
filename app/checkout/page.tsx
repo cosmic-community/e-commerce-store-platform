@@ -132,14 +132,14 @@ export default function CheckoutPage() {
             {cart.map((item, index) => (
               <div key={index} className="flex items-center space-x-4">
                 <img
-                  src={item.image}
-                  alt={item.title}
+                  src={item.image?.imgix_url || '/placeholder-image.jpg'}
+                  alt={item.name}
                   width="64"
                   height="64"
                   className="w-16 h-16 object-cover rounded-lg"
                 />
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{item.title}</h3>
+                  <h3 className="font-medium text-gray-900">{item.name}</h3>
                   <p className="text-gray-600">Qty: {item.quantity}</p>
                 </div>
                 <div className="text-lg font-semibold text-gray-900">
