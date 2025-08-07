@@ -65,13 +65,27 @@ export default function CheckoutPage() {
         return;
       }
 
+      // Prepare cart items with proper serialization
+      const serializedCartItems = cart.map(item => ({
+        id: item.id,
+        title: item.title || item.name,
+        name: item.name || item.title,
+        slug: item.slug,
+        price: item.price,
+        salePrice: item.salePrice,
+        quantity: item.quantity,
+        sku: item.sku,
+        // Only include the imgix_url string, not the entire image object
+        image: item.image?.imgix_url || null,
+      }));
+
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: cart,
+          items: serializedCartItems,
           customerInfo,
         }),
       });
@@ -132,18 +146,18 @@ export default function CheckoutPage() {
             {cart.map((item, index) => (
               <div key={index} className="flex items-center space-x-4">
                 <img
-                  src={item.image?.imgix_url || '/placeholder-image.jpg'}
-                  alt={item.name}
+                  src={item.image?.imgix_url ? `${item.image.imgix_url}?w=128&h=128&fit=crop&auto=format,compress` : '/placeholder-image.jpg'}
+                  alt={item.name || item.title}
                   width="64"
                   height="64"
                   className="w-16 h-16 object-cover rounded-lg"
                 />
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{item.name}</h3>
+                  <h3 className="font-medium text-gray-900">{item.name || item.title}</h3>
                   <p className="text-gray-600">Qty: {item.quantity}</p>
                 </div>
                 <div className="text-lg font-semibold text-gray-900">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
                 </div>
               </div>
             ))}

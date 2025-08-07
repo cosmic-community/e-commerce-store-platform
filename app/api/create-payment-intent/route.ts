@@ -1,10 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 
+interface CartItem {
+  id: string;
+  title: string;
+  name: string;
+  slug: string;
+  price: number;
+  salePrice?: number;
+  quantity: number;
+  sku?: string;
+  image?: string | null; // Now expecting just the URL string
+}
+
+interface CustomerInfo {
+  fullName: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { items, customerInfo } = body;
+    const { items, customerInfo }: { items: CartItem[]; customerInfo: CustomerInfo } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Items are required' }, { status: 400 });
@@ -15,22 +36,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total amount from items
-    const totalAmount = items.reduce((sum: number, item: any) => {
-      return sum + (item.price * item.quantity);
+    const totalAmount = items.reduce((sum: number, item: CartItem) => {
+      const effectivePrice = item.salePrice || item.price;
+      return sum + (effectivePrice * item.quantity);
     }, 0);
 
     // Create line items for Stripe Checkout
-    const lineItems = items.map((item: any) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.title,
-          images: item.image ? [item.image] : [],
+    const lineItems = items.map((item: CartItem) => {
+      const effectivePrice = item.salePrice || item.price;
+      const productName = item.title || item.name;
+      
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: productName,
+            // Only include images if they exist and are valid URLs
+            images: item.image ? [item.image] : [],
+          },
+          unit_amount: Math.round(effectivePrice * 100), // Convert to cents
         },
-        unit_amount: Math.round(item.price * 100), // Convert to cents
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -47,6 +75,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         customerName: customerInfo.fullName || '',
         customerEmail: customerInfo.email,
+        customerAddress: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state} ${customerInfo.zipCode}`,
       },
     });
 
