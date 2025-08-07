@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -79,5 +79,35 @@ export default function SuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="container mx-auto px-4 py-16">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="mb-8">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+          
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Processing...
+          </h1>
+          
+          <p className="text-lg text-gray-600">
+            Please wait while we confirm your payment.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SuccessContent />
+    </Suspense>
   );
 }
