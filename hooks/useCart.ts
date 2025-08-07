@@ -1,5 +1,2 @@
-import { useContext } from 'react'
-import { CartProvider } from '@/context/CartContext'
-
-// Re-export the hook from the context
+// Re-export the hook from the context for convenience
 export { useCart } from '@/context/CartContext'

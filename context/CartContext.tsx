@@ -5,21 +5,31 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 export interface CartItem {
   id: string;
   title: string;
-  price: number;
-  quantity: number;
-  image: string;
+  name: string;
   slug: string;
+  price: number;
+  salePrice?: number;
+  quantity: number;
+  image?: {
+    imgix_url: string;
+  };
+  sku?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
+  items: CartItem[];
+  total: number;
+  itemCount: number;
+  isOpen: boolean;
   addToCart: (item: Omit<CartItem, 'quantity'>) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
-  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
   setIsCartOpen: (open: boolean) => void;
 }
 
@@ -27,14 +37,15 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Load cart from localStorage on client side
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsed = JSON.parse(savedCart);
+        setCart(Array.isArray(parsed) ? parsed : parsed.items || []);
       } catch (error) {
         console.error('Error loading cart from localStorage:', error);
       }
@@ -88,19 +99,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => {
+      const price = item.salePrice ?? item.price;
+      return total + (price * item.quantity);
+    }, 0);
   };
+
+  const openCart = () => {
+    setIsOpen(true);
+  };
+
+  const closeCart = () => {
+    setIsOpen(false);
+  };
+
+  const setIsCartOpen = (open: boolean) => {
+    setIsOpen(open);
+  };
+
+  // Computed values
+  const total = getTotalPrice();
+  const itemCount = getTotalItems();
 
   return (
     <CartContext.Provider value={{
       cart,
+      items: cart, // Alias for backward compatibility
+      total,
+      itemCount,
+      isOpen,
       addToCart,
       removeFromCart,
       updateQuantity,
       clearCart,
       getTotalItems,
       getTotalPrice,
-      isCartOpen,
+      openCart,
+      closeCart,
       setIsCartOpen,
     }}>
       {children}

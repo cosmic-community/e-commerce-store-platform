@@ -1,11 +1,11 @@
 'use client'
 
-import { useCart } from '@/hooks/useCart'
+import { useCart } from '@/context/CartContext'
 import { formatPrice } from '@/lib/cart'
 import Link from 'next/link'
 
 export default function CartSidebar() {
-  const { cart, isOpen, closeCart, updateQuantity, removeFromCart } = useCart()
+  const { items, isOpen, closeCart, updateQuantity, removeFromCart, total, itemCount } = useCart()
 
   if (!isOpen) return null
 
@@ -39,7 +39,7 @@ export default function CartSidebar() {
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-6">
-          {cart.items.length === 0 ? (
+          {items.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-24 h-24 mx-auto mb-4 text-gray-300">
                 <svg fill="currentColor" viewBox="0 0 24 24">
@@ -50,14 +50,14 @@ export default function CartSidebar() {
             </div>
           ) : (
             <div className="space-y-4">
-              {cart.items.map((item) => (
+              {items.map((item) => (
                 <div key={item.id} className="flex gap-4 py-4 border-b">
                   {/* Product Image */}
                   <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     {item.image && (
                       <img
                         src={`${item.image.imgix_url}?w=100&h=100&fit=crop&auto=format,compress`}
-                        alt={item.name}
+                        alt={item.name || item.title}
                         className="w-full h-full object-cover"
                       />
                     )}
@@ -70,7 +70,7 @@ export default function CartSidebar() {
                       className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2"
                       onClick={closeCart}
                     >
-                      {item.name}
+                      {item.name || item.title}
                     </Link>
                     
                     {item.sku && (
@@ -133,12 +133,12 @@ export default function CartSidebar() {
         </div>
 
         {/* Footer with Total and Checkout */}
-        {cart.items.length > 0 && (
+        {items.length > 0 && (
           <div className="border-t p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-semibold">Total:</span>
               <span className="text-xl font-bold text-blue-600">
-                {formatPrice(cart.total)}
+                {formatPrice(total)}
               </span>
             </div>
             
@@ -147,7 +147,7 @@ export default function CartSidebar() {
               onClick={closeCart}
               className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors text-center block"
             >
-              Checkout ({cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'})
+              Checkout ({itemCount} {itemCount === 1 ? 'item' : 'items'})
             </Link>
             
             <button

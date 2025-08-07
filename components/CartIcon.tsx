@@ -1,9 +1,9 @@
 'use client'
 
-import { useCart } from '@/hooks/useCart'
+import { useCart } from '@/context/CartContext'
 
 export default function CartIcon() {
-  const { cart, openCart } = useCart()
+  const { itemCount, openCart } = useCart()
 
   return (
     <button
@@ -25,9 +25,9 @@ export default function CartIcon() {
         />
       </svg>
       
-      {cart.itemCount > 0 && (
+      {itemCount > 0 && (
         <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-          {cart.itemCount > 99 ? '99+' : cart.itemCount}
+          {itemCount > 99 ? '99+' : itemCount}
         </span>
       )}
     </button>

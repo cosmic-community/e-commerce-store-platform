@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Product } from '@/types'
-import { useCart } from '@/hooks/useCart'
+import { useCart } from '@/context/CartContext'
 
 interface AddToCartButtonProps {
   product: Product
@@ -24,7 +24,21 @@ export default function AddToCartButton({
     setIsAdding(true)
     
     try {
-      addToCart(product, quantity)
+      // Transform product to cart item format
+      const cartItem = {
+        id: product.id,
+        title: product.title,
+        name: product.title,
+        slug: product.slug,
+        price: product.metadata.price || 0,
+        salePrice: product.metadata.sale_price,
+        image: product.metadata.image,
+        sku: product.metadata.sku
+      };
+
+      for (let i = 0; i < quantity; i++) {
+        addToCart(cartItem);
+      }
       
       // Brief loading state for visual feedback
       setTimeout(() => {
@@ -36,7 +50,7 @@ export default function AddToCartButton({
     }
   }
 
-  const isOutOfStock = !product.metadata.in_stock || product.metadata.stock_quantity < 1
+  const isOutOfStock = !product.metadata.in_stock || (product.metadata.stock_quantity && product.metadata.stock_quantity < 1)
   
   return (
     <button
