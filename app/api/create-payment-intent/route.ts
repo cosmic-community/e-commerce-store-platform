@@ -1,50 +1,65 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
-import { PaymentIntentRequest } from '@/types'
+import { NextRequest, NextResponse } from 'next/server';
+import { stripe } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: PaymentIntentRequest = await request.json()
-    
-    const { amount, currency = 'usd', items } = body
+    const body = await request.json();
+    const { items, customerInfo } = body;
 
-    // Validate amount
-    if (!amount || amount < 50) { // Stripe minimum is $0.50
-      return NextResponse.json(
-        { error: 'Invalid amount' },
-        { status: 400 }
-      )
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'Items are required' }, { status: 400 });
     }
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount),
-      currency,
+    if (!customerInfo || !customerInfo.email) {
+      return NextResponse.json({ error: 'Customer email is required' }, { status: 400 });
+    }
+
+    // Calculate total amount from items
+    const totalAmount = items.reduce((sum: number, item: any) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+
+    // Create line items for Stripe Checkout
+    const lineItems = items.map((item: any) => ({
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: item.title,
+          images: item.image ? [item.image] : [],
+        },
+        unit_amount: Math.round(item.price * 100), // Convert to cents
+      },
+      quantity: item.quantity,
+    }));
+
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'}/checkout`,
+      customer_email: customerInfo.email,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA'],
+      },
       metadata: {
-        itemCount: items.length.toString(),
-        items: JSON.stringify(items.map(item => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.salePrice ?? item.price,
-        }))),
+        customerName: customerInfo.fullName || '',
+        customerEmail: customerInfo.email,
       },
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    })
+    });
 
     return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      amount: paymentIntent.amount,
-    })
+      sessionId: session.id,
+      totalAmount: totalAmount,
+    });
 
-  } catch (error) {
-    console.error('Payment intent error:', error)
-    
+  } catch (error: any) {
+    console.error('Error creating checkout session:', error);
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
-    )
+    );
   }
 }
